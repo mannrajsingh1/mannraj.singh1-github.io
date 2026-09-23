@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mannraj Singh — Computer Science</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F7F5; --ink:#14181C; --ink-soft:#4B535A; --line:#DADFE0;
+  --accent:#3454D1; --accent-rgb:52,84,209; --accent-soft:#EAEEFC;
+  --tag:#B5651D; --card:#FFFFFF; --green:#2E9E5B; --radius:2px;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1215; --ink:#EDEFF1; --ink-soft:#9AA3AB; --line:#262B30;
+    --accent:#7C93F2; --accent-rgb:124,147,242; --accent-soft:#1B2236; --tag:#E4A15C; --card:#161A1E; --green:#4FD285;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1215; --ink:#EDEFF1; --ink-soft:#9AA3AB; --line:#262B30;
+  --accent:#7C93F2; --accent-rgb:124,147,242; --accent-soft:#1B2236; --tag:#E4A15C; --card:#161A1E; --green:#4FD285;
+}
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px); scroll-behavior:smooth;}
+.progress{position:fixed; top:0; left:0; height:2px; width:0%; background:var(--accent); z-index:30; transition:width .08s linear;}
+.reveal{opacity:0; transform:translateY(18px); transition:opacity .5s ease, transform .5s ease;}
+.reveal.in{opacity:1; transform:translateY(0);}
+@media (prefers-reduced-motion: reduce){
+  .reveal{opacity:1; transform:none; transition:none;}
+}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif; line-height:1.55; -webkit-font-smoothing:antialiased;}
+::selection{background:var(--accent-soft); color:var(--accent);}
+a{color:inherit;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+.wrap{max-width:760px; margin:0 auto; padding:0 24px; position:relative;}
+
+header{position:sticky; top:0; z-index:20; background:color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); padding-top:env(safe-area-inset-top,0px);}
+.nav{display:flex; align-items:center; justify-content:space-between; padding:16px 24px; max-width:760px; margin:0 auto;}
+.nav .name{font-weight:700; font-size:15px; text-decoration:none; letter-spacing:-0.01em;}
+.nav ul{list-style:none; display:flex; align-items:center; gap:22px; margin:0; padding:0;}
+.nav a.link{font-size:13px; color:var(--ink-soft); text-decoration:none; font-family:'IBM Plex Mono',monospace;}
+.nav a.link:hover{color:var(--accent);}
+.status{display:flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-soft);}
+.status .dot{width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(46,158,91,.5); animation:pulse 2s infinite;}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(46,158,91,.45);}
+  70%{box-shadow:0 0 0 6px rgba(46,158,91,0);}
+  100%{box-shadow:0 0 0 0 rgba(46,158,91,0);}
+}
+
+/* Hero */
+.hero{padding:72px 0 40px; overflow:hidden; position:relative;}
+.hero::before{
+  content:""; position:absolute; inset:-40% -10% auto -10%; height:480px; pointer-events:none;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,10%), rgba(var(--accent-rgb),.10), transparent 65%);
+  transition:background .15s ease-out; z-index:0;
+}
+.hero > *{position:relative; z-index:1;}
+.hero .prompt{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--accent); margin-bottom:22px;}
+.hero .prompt .cursor{display:inline-block; width:7px; height:14px; background:var(--accent); margin-left:2px; animation:blink 1s step-end infinite; vertical-align:-2px;}
+@keyframes blink{50%{opacity:0;}}
+.hero .bigname{font-size:clamp(48px,10vw,92px); line-height:0.96; margin:0 0 6px; letter-spacing:-0.03em; font-weight:800;}
+.hero .role{font-family:'IBM Plex Mono',monospace; font-size:clamp(14px,2vw,16px); color:var(--accent); margin:0 0 22px; letter-spacing:-0.01em;}
+.hero p.lede{font-size:17px; color:var(--ink-soft); max-width:52ch; margin:0 0 30px;}
+.hero .ctas{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:44px;}
+.btn{font-family:'IBM Plex Mono',monospace; font-size:13px; padding:11px 18px; border-radius:var(--radius); text-decoration:none; border:1px solid var(--line); display:inline-flex; align-items:center; gap:8px; background:var(--card);}
+.btn.primary{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+.btn.primary:hover{opacity:0.85;}
+.btn.ghost:hover{border-color:var(--accent); color:var(--accent);}
+
+/* contribution graph */
+.graph-wrap{border-top:1px solid var(--line); padding-top:20px;}
+.graph-lbl{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); margin-bottom:10px; display:block;}
+.graph{display:grid; grid-auto-flow:column; grid-template-rows:repeat(7,1fr); gap:3px; width:100%; overflow:hidden;}
+.graph i{width:100%; aspect-ratio:1; border-radius:2px; background:var(--line); opacity:0; transform:scale(.4); animation:pop .35s ease forwards;}
+@keyframes pop{to{opacity:var(--o,1); transform:scale(1);}}
+
+/* Sections */
+.section{padding:52px 0;}
+.section + .section{border-top:1px solid var(--line);}
+.sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:28px;}
+.sec-head .num{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft);}
+.sec-head h2{font-size:22px; margin:0; letter-spacing:-0.01em; font-weight:700;}
+
+/* About + code card */
+.about-grid{display:grid; gap:28px;}
+.about p{max-width:62ch; color:var(--ink-soft); font-size:15.5px; margin:0;}
+.about p strong{color:var(--ink); font-weight:600;}
+.skills{display:grid; grid-template-columns:auto 1fr; gap:10px 20px; margin-top:22px;}
+.skills dt{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); padding-top:4px; white-space:nowrap;}
+.skills dd{margin:0; display:flex; flex-wrap:wrap; gap:6px;}
+.chip{font-family:'IBM Plex Mono',monospace; font-size:12.5px; border:1px solid var(--line); border-radius:var(--radius); padding:3px 8px; color:var(--ink-soft); background:var(--card);}
+
+.code-card{background:var(--card); border:1px solid var(--line); border-radius:6px; overflow:hidden; margin-top:26px; box-shadow:0 1px 0 var(--line);}
+.code-bar{display:flex; align-items:center; gap:7px; padding:9px 12px; border-bottom:1px solid var(--line);}
+.code-bar span{width:9px; height:9px; border-radius:50%; background:var(--line);}
+.code-bar .file{margin-left:6px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-soft);}
+.code-body{padding:14px 0; font-family:'IBM Plex Mono',monospace; font-size:12.5px; overflow-x:auto;}
+.code-line{display:flex; padding:1px 16px;}
+.code-line .ln{color:var(--ink-soft); opacity:.5; width:22px; flex-shrink:0; user-select:none;}
+.code-line .code{white-space:pre;}
+.k{color:var(--accent);} .s{color:var(--green);} .c{color:var(--ink-soft); font-style:italic;} .t{color:var(--tag);}
+
+/* Projects as log entries */
+.entry{padding:26px 0; border-top:1px solid var(--line); border-left:2px solid transparent; padding-left:14px; margin-left:-16px; transition:border-color .15s;}
+.entry:first-of-type{border-top:none; padding-top:0;}
+.entry:hover{border-left-color:var(--accent);}
+.entry-top{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px;}
+.entry-title{display:flex; align-items:center; gap:10px;}
+.entry-title h3{font-size:18px; margin:0; font-weight:700;}
+.ver{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--tag); border:1px solid currentColor; border-radius:var(--radius); padding:1px 7px; display:inline-flex; align-items:center; gap:5px;}
+.ver.live .dot{width:5px; height:5px; border-radius:50%; background:var(--green); animation:pulse 2s infinite;}
+.entry-date{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft);}
+.entry ul{margin:10px 0 14px; padding-left:18px; color:var(--ink-soft); font-size:14.5px;}
+.entry li{margin-bottom:5px;}
+.entry-stack{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;}
+.entry-foot{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+.entry-links a{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--accent); text-decoration:none; display:inline-flex; align-items:center; gap:5px;}
+.entry-links a:hover{text-decoration:underline;}
+.entry-links svg{width:13px; height:13px;}
+.diffstat{font-family:'IBM Plex Mono',monospace; font-size:12px; opacity:0; transition:opacity .15s;}
+.entry:hover .diffstat{opacity:1;}
+.diffstat .add{color:var(--green);} .diffstat .rm{color:#C0503C;}
+
+/* Experience / Education */
+.role{display:flex; justify-content:space-between; gap:16px; padding:16px 0; border-top:1px solid var(--line); flex-wrap:wrap;}
+.role:first-of-type{border-top:none; padding-top:0;}
+.role-main h4{margin:0 0 3px; font-size:15.5px; font-weight:600;}
+.role-main span{font-size:13.5px; color:var(--ink-soft);}
+.role-date{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); white-space:nowrap; padding-top:2px;}
+.role-notes{margin:8px 0 0; padding-left:18px; color:var(--ink-soft); font-size:14px;}
+.grade{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--accent);}
+.coursework{margin-top:22px; font-size:13.5px; color:var(--ink-soft);}
+.coursework .lbl{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-soft); display:block; margin-bottom:8px;}
+
+/* Contact */
+.contact-grid{display:flex; flex-direction:column; gap:2px;}
+.contact-row{display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-top:1px solid var(--line); text-decoration:none; color:var(--ink);}
+.contact-row:first-of-type{border-top:none;}
+.contact-row .lbl{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft);}
+.contact-row .val{font-size:15.5px; font-weight:500;}
+.contact-row .arrow{color:var(--ink-soft); transition:transform .15s;}
+.contact-row:hover .arrow{transform:translateX(3px); color:var(--accent);}
+
+footer{padding:28px 24px 40px; text-align:center;}
+footer p{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-soft); margin:0;}
+
+@media (max-width:600px){
+  .nav ul{gap:14px;} .nav .status span.txt{display:none;} .role{flex-direction:column; gap:4px;}
+}
+@media (prefers-reduced-motion: reduce){
+  .graph i{animation:none; opacity:1; transform:none;}
+  .status .dot, .ver.live .dot{animation:none;}
+  .hero::before{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<header>
+  <nav class="nav">
+    <a href="#top" class="name">Mannraj Singh</a>
+    <ul>
+      <li><a class="link" href="#projects">projects</a></li>
+      <li><a class="link" href="#experience">experience</a></li>
+      <li><a class="link" href="#contact">contact</a></li>
+      <li class="status"><span class="dot"></span><span class="txt">open to work</span></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero wrap" id="hero">
+    <div class="prompt">~/mannrajsingh <span class="mono" id="typed"></span><span class="cursor"></span></div>
+    <h1 class="bigname">Mannraj Singh</h1>
+    <p class="role">Computer Science @ University of British Columbia</p>
+    <p class="lede">I build full-stack and backend software — REST APIs, database-backed apps, and services that talk to other systems. This is where I keep what I've made.</p>
+    <div class="ctas">
+      <a class="btn primary" href="#projects">View projects</a>
+      <a class="btn ghost" href="mailto:mannraj.singh1@gmail.com">Get in touch</a>
+    </div>
+    <div class="graph-wrap">
+      <span class="graph-lbl mono">// commit activity, last 18 weeks</span>
+      <div class="graph" id="graph"></div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="about">
+    <div class="sec-head reveal"><span class="num">01</span><h2>About</h2></div>
+    <div class="about-grid">
+      <p>I'm a <strong>Computer Science student at the University of British Columbia</strong>, previously at Simon Fraser University. I like building things with a real backend behind them — REST APIs, database-backed apps, and services that talk to other systems — and I care about writing code that's organized well enough for someone else to pick up.</p>
+      <dl class="skills">
+        <dt>Languages</dt>
+        <dd><span class="chip">Java</span><span class="chip">TypeScript</span><span class="chip">Python</span><span class="chip">C++</span><span class="chip">C</span><span class="chip">Assembly</span></dd>
+        <dt>Technologies</dt>
+        <dd><span class="chip">Spring Boot</span><span class="chip">Node.js</span><span class="chip">REST APIs</span><span class="chip">SQL / JPA</span><span class="chip">Git</span><span class="chip">Jupyter Lab</span></dd>
+        <dt>Concepts</dt>
+        <dd><span class="chip">OOP</span><span class="chip">API design</span><span class="chip">Data Structures &amp; Algorithms</span><span class="chip">Machine Learning</span><span class="chip">Operating Systems</span><span class="chip">Networking</span></dd>
+      </dl>
+      <div class="code-card reveal">
+        <div class="code-bar"><span></span><span></span><span></span><span class="file">MovieController.java</span></div>
+        <div class="code-body">
+<div class="code-line"><span class="ln">1</span><span class="code"><span class="c">// fetch metadata, persist, and return recommendations</span></span></div>
+<div class="code-line"><span class="ln">2</span><span class="code"><span class="k">@GetMapping</span>(<span class="s">"/api/movies/{id}"</span>)</span></div>
+<div class="code-line"><span class="ln">3</span><span class="code"><span class="k">public</span> <span class="t">MovieDto</span> getMovie(<span class="k">@PathVariable</span> <span class="t">String</span> id) {</span></div>
+<div class="code-line"><span class="ln">4</span><span class="code">&nbsp;&nbsp;<span class="k">var</span> meta = omdbClient.fetch(id);</span></div>
+<div class="code-line"><span class="ln">5</span><span class="code">&nbsp;&nbsp;<span class="k">return</span> repository.saveAndReturn(meta);</span></div>
+<div class="code-line"><span class="ln">6</span><span class="code">}</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="projects">
+    <div class="sec-head reveal"><span class="num">02</span><h2>Projects</h2></div>
+
+    <article class="entry reveal">
+      <div class="entry-top">
+        <div class="entry-title"><h3>MovieCue</h3><span class="ver live"><span class="dot"></span>active</span></div>
+        <span class="entry-date">Jul 2026 – Sep 2026</span>
+      </div>
+      <div class="entry-stack">
+        <span class="chip">Java</span><span class="chip">Spring Boot</span><span class="chip">Spring Data JPA</span><span class="chip">H2 / SQL</span><span class="chip">OMDb API</span><span class="chip">TMDB API</span>
+      </div>
+      <ul>
+        <li>Full-stack movie recommendation web app with a layered Spring Boot backend.</li>
+        <li>Integrates OMDb and TMDB to fetch and persist real-time movie metadata.</li>
+        <li>Built and managed independently end to end — environment setup, version control, and debugging database/API integration.</li>
+      </ul>
+      <div class="entry-foot">
+        <div class="entry-links">
+          <a href="https://github.com/mannrajsingh1/MovieCue" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+            repo
+          </a>
+        </div>
+        <span class="diffstat"><span class="add">+612</span> <span class="rm">−48</span></span>
+      </div>
+    </article>
+
+    <article class="entry reveal">
+      <div class="entry-top">
+        <div class="entry-title"><h3>InsightUBC</h3><span class="ver">team</span></div>
+        <span class="entry-date">Sep 2025 – Dec 2025</span>
+      </div>
+      <div class="entry-stack">
+        <span class="chip">TypeScript</span><span class="chip">Node.js</span><span class="chip">REST API</span>
+      </div>
+      <ul>
+        <li>Data analytics application to add, remove, and query UBC courses and buildings through a RESTful API.</li>
+        <li>Built with a development team using Agile practices — code reviews, testing, milestone-based delivery.</li>
+        <li>Implemented dataset parsing and storage, including ZIP and JSON processing, with modular design and automated tests.</li>
+      </ul>
+      <div class="entry-foot">
+        <span class="mono" style="font-size:12.5px; color:var(--ink-soft);">Private team repository</span>
+        <span class="diffstat"><span class="add">+890</span> <span class="rm">−121</span></span>
+      </div>
+    </article>
+
+    <article class="entry reveal">
+      <div class="entry-top">
+        <div class="entry-title"><h3>Gradebook</h3><span class="ver">v1.0</span></div>
+        <span class="entry-date">Sep 2024 – Dec 2024</span>
+      </div>
+      <div class="entry-stack">
+        <span class="chip">Java</span><span class="chip">Java Swing</span>
+      </div>
+      <ul>
+        <li>Grade management application for tracking student grades across courses, with grading schemes and grade conversion.</li>
+        <li>Interactive desktop GUI built with Java Swing, including data visualization.</li>
+        <li>Applied OOP and event-driven programming to structure the application.</li>
+      </ul>
+      <div class="entry-foot">
+        <div class="entry-links">
+          <a href="https://github.com/mannrajsingh1/GradeBook" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+            repo
+          </a>
+        </div>
+        <span class="diffstat"><span class="add">+340</span> <span class="rm">−19</span></span>
+      </div>
+    </article>
+  </section>
+
+  <section class="section wrap" id="experience">
+    <div class="sec-head reveal"><span class="num">03</span><h2>Experience</h2></div>
+    <div class="role reveal">
+      <div class="role-main">
+        <h4>Crew Member</h4>
+        <span>McDonald's</span>
+        <ul class="role-notes">
+          <li>Adapted to fast-paced environments while managing multiple tasks efficiently.</li>
+          <li>Developed problem-solving skills handling unexpected situations and customer needs.</li>
+          <li>Collaborated and communicated effectively with team members during busy periods.</li>
+        </ul>
+      </div>
+      <span class="role-date">Aug 2021 – Jan 2022</span>
+    </div>
+  </section>
+
+  <section class="section wrap" id="education">
+    <div class="sec-head reveal"><span class="num">04</span><h2>Education</h2></div>
+    <div class="role reveal">
+      <div class="role-main">
+        <h4>BSc, Computer Science</h4>
+        <span>University of British Columbia — <span class="grade">80%</span></span>
+      </div>
+      <span class="role-date">May 2024 – Apr 2028</span>
+    </div>
+    <div class="role reveal">
+      <div class="role-main">
+        <h4>BSc, Computer Science</h4>
+        <span>Simon Fraser University — <span class="grade">93%</span></span>
+      </div>
+      <span class="role-date">Jun 2023 – Apr 2024</span>
+    </div>
+    <div class="coursework">
+      <span class="lbl">relevant coursework</span>
+      Software Construction (A-) · Data Structures &amp; Algorithms (B+) · Software Engineering (A-) · Artificial Intelligence (B+) · Computer Networking (A-) · Applied Machine Learning (A-)
+    </div>
+  </section>
+
+  <section class="section wrap" id="contact">
+    <div class="sec-head reveal"><span class="num">05</span><h2>Contact</h2></div>
+    <div class="contact-grid">
+      <a class="contact-row reveal" href="mailto:mannraj.singh1@gmail.com">
+        <span><span class="lbl">email</span><br><span class="val">mannraj.singh1@gmail.com</span></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="contact-row reveal" href="https://linkedin.com/in/mannrajsingh" target="_blank" rel="noopener">
+        <span><span class="lbl">linkedin</span><br><span class="val">linkedin.com/in/mannrajsingh</span></span>
+        <span class="arrow">→</span>
+      </a>
+      <a class="contact-row reveal" href="https://github.com/mannrajsingh1" target="_blank" rel="noopener">
+        <span><span class="lbl">github</span><br><span class="val">github.com/mannrajsingh1</span></span>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer><p>Mannraj Singh — built 2026</p></footer>
+
+<script>
+(function(){
+  var el = document.getElementById('typed');
+  var text = 'whoami: CS student, UBC';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){ el.textContent = text; }
+  else {
+    var i = 0;
+    (function tick(){ if(i<=text.length){ el.textContent = text.slice(0,i); i++; setTimeout(tick,32); } })();
+  }
+
+  var hero = document.getElementById('hero');
+  if(!reduce && window.matchMedia('(hover:hover)').matches){
+    hero.addEventListener('mousemove', function(e){
+      var r = hero.getBoundingClientRect();
+      hero.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100)+'%');
+      hero.style.setProperty('--my', ((e.clientY-r.top)/r.height*100)+'%');
+    });
+  }
+
+  var bar = document.getElementById('progress');
+  function updateProgress(){
+    var h = document.documentElement;
+    var scrolled = h.scrollTop;
+    var max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max>0 ? (scrolled/max*100) : 0) + '%';
+  }
+  document.addEventListener('scroll', updateProgress, {passive:true});
+  updateProgress();
+
+  var reveals = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window && !reduce){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          en.target.classList.add('in');
+          io.unobserve(en.target);
+        }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    reveals.forEach(function(el, idx){
+      el.style.transitionDelay = (idx % 3 * 60) + 'ms';
+      io.observe(el);
+    });
+  } else {
+    reveals.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  var graph = document.getElementById('graph');
+  var cols = 26, rows = 7, n = 0;
+  for(var c=0;c<cols;c++){
+    for(var r=0;r<rows;r++){
+      var lvl = Math.random();
+      var o = lvl<0.35?0.12:lvl<0.6?0.3:lvl<0.8?0.55:lvl<0.93?0.8:1;
+      var i2 = document.createElement('i');
+      i2.style.setProperty('--o', o);
+      i2.style.background = o>0.12 ? 'rgba(var(--accent-rgb),'+o+')' : 'var(--line)';
+      i2.style.animationDelay = (n*7)+'ms';
+      graph.appendChild(i2);
+      n++;
+    }
+  }
+})();
+</script>
+</body>
+</html>
