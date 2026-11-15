@@ -312,7 +312,7 @@ footer p{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--in
 
     <article class="entry reveal">
       <div class="entry-top">
-        <div class="entry-title"><h3>MovieCue</h3><span class="ver">personal</span></div>
+        <div class="entry-title"><h3>MovieCue</h3><span class="ver">solo</span></div>
         <span class="entry-date">Jul 2026 – Oct 2026</span>
       </div>
       <div class="entry-stack">
@@ -554,29 +554,40 @@ footer p{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--in
 
   /* full-page interactive particle network: drifting tokens that link up and chase the cursor */
   var cv = document.getElementById('fx'), ctx = cv.getContext('2d');
-  var dpr = Math.min(window.devicePixelRatio||1, 2), W = 0, H = 0, pts = [], mouse = {x:-999, y:-999}, frame = 0;
+  var dpr = Math.min(window.devicePixelRatio||1, 2), W = 0, H = 0, pts = [], mouse = {x:-999, y:-999}, frame = 0, calm = 0, ripples = [];
   var rgb = getComputedStyle(root).getPropertyValue('--accent-rgb').trim() || '52,84,209';
   var words = ['Mann','raj','Tok','API','</>','tensor','GET /','ReLU','0x1F','LLM','JSON','SQL'];
   function sizeFx(){
     W = window.innerWidth; H = window.innerHeight; cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
     var n = Math.min(90, Math.floor(W*H/9500)); pts = [];
     for(var a=0;a<n;a++){
-      pts.push({x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35,
+      pts.push({sx:0, sy:0, x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35,
         r:Math.random()*1.6+.8, w:Math.random()<.14 ? words[Math.floor(Math.random()*words.length)] : null});
     }
   }
   function drawFx(){
     ctx.clearRect(0,0,W,H);
+    if(calm > 0){ calm--; }
+    for(var ri=ripples.length-1;ri>=0;ri--){
+      var rp = ripples[ri]; rp.r += 9; rp.a -= .025;
+      if(rp.a <= 0){ ripples.splice(ri,1); continue; }
+      ctx.strokeStyle = 'rgba('+rgb+','+rp.a+')'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(rp.x,rp.y,rp.r,0,6.283); ctx.stroke(); ctx.lineWidth = 1;
+    }
+    if(mouse.x > -100){
+      var gl = ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,110);
+      gl.addColorStop(0,'rgba('+rgb+',.22)'); gl.addColorStop(1,'rgba('+rgb+',0)');
+      ctx.fillStyle = gl; ctx.fillRect(mouse.x-110,mouse.y-110,220,220);
+    }
     if(frame++ % 30 === 0){ rgb = getComputedStyle(root).getPropertyValue('--accent-rgb').trim() || rgb; }
     var a, b, p, q, dx, dy, d;
     for(a=0;a<pts.length;a++){
       p = pts[a];
       if(!reduce){
-        p.x += p.vx; p.y += p.vy;
-        if(p.x<0 || p.x>W){ p.vx *= -1; }
-        if(p.y<0 || p.y>H){ p.vy *= -1; }
+        p.x += p.vx+p.sx; p.y += p.vy+p.sy; p.sx *= .94; p.sy *= .94;
+        if(p.x<0 || p.x>W){ p.vx *= -1; p.sx *= -1; p.x = Math.max(0, Math.min(W, p.x)); }
+        if(p.y<0 || p.y>H){ p.vy *= -1; p.sy *= -1; p.y = Math.max(0, Math.min(H, p.y)); }
         dx = mouse.x-p.x; dy = mouse.y-p.y; d = Math.sqrt(dx*dx+dy*dy);
-        if(d<150 && d>45){ p.x += dx/d*.7; p.y += dy/d*.7; }
+        if(d<260 && d>38){ var pull = (.8+(1-d/260)*2.6)*(1-calm/70); p.x += dx/d*pull; p.y += dy/d*pull; }
       }
     }
     ctx.lineWidth = 1;
@@ -584,17 +595,18 @@ footer p{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--in
       p = pts[a];
       for(b=a+1;b<pts.length;b++){
         q = pts[b]; dx = p.x-q.x; dy = p.y-q.y; d = Math.sqrt(dx*dx+dy*dy);
-        if(d<125){ ctx.strokeStyle = 'rgba('+rgb+','+((1-d/125)*.3)+')'; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke(); }
+        if(d<125){ ctx.strokeStyle = 'rgba('+rgb+','+((1-d/125)*.45)+')'; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke(); }
       }
       dx = p.x-mouse.x; dy = p.y-mouse.y; d = Math.sqrt(dx*dx+dy*dy);
-      if(d<170){ ctx.strokeStyle = 'rgba('+rgb+','+((1-d/170)*.7)+')'; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(mouse.x,mouse.y); ctx.stroke(); }
+      if(d<230){ ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba('+rgb+','+((1-d/230)*.95)+')'; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(mouse.x,mouse.y); ctx.stroke(); ctx.lineWidth = 1; }
     }
     ctx.font = '11px "IBM Plex Mono", monospace';
     for(a=0;a<pts.length;a++){
       p = pts[a];
-      if(p.w){ ctx.fillStyle = 'rgba('+rgb+',.45)'; ctx.fillText(p.w, p.x+6, p.y+3); }
-      ctx.fillStyle = 'rgba('+rgb+','+(p.w ? .85 : .5)+')';
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.283); ctx.fill();
+      if(p.w){ ctx.fillStyle = 'rgba('+rgb+',.7)'; ctx.fillText(p.w, p.x+6, p.y+3); }
+      var md = Math.sqrt((p.x-mouse.x)*(p.x-mouse.x)+(p.y-mouse.y)*(p.y-mouse.y)), rr = p.r*(md<200 ? 1+(1-md/200)*1.2 : 1);
+      ctx.fillStyle = 'rgba('+rgb+','+(p.w ? 1 : .75)+')';
+      ctx.beginPath(); ctx.arc(p.x,p.y,rr,0,6.283); ctx.fill();
     }
   }
   function loopFx(){ if(!document.hidden){ drawFx(); } requestAnimationFrame(loopFx); }
@@ -603,46 +615,58 @@ footer p{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--in
     requestAnimationFrame(loopFx);
     window.addEventListener('pointermove', function(e){ mouse.x = e.clientX; mouse.y = e.clientY; });
     document.addEventListener('mouseleave', function(){ mouse.x = -999; mouse.y = -999; });
+    window.addEventListener('pointerdown', function(e){
+      if(typeof S !== 'undefined' && S.on){ return; }
+      calm = 70; ripples.push({x:e.clientX, y:e.clientY, r:10, a:.6});
+      pts.forEach(function(p){
+        var ddx = p.x-e.clientX, ddy = p.y-e.clientY, dd = Math.max(Math.sqrt(ddx*ddx+ddy*ddy), 20), mag = 5+20*Math.max(0, 1-dd/520);
+        p.sx += ddx/dd*mag+(Math.random()-.5)*2; p.sy += ddy/dd*mag+(Math.random()-.5)*2;
+      });
+    });
   }
   var rz; window.addEventListener('resize', function(){ clearTimeout(rz); rz = setTimeout(function(){ sizeFx(); drawFx(); }, 150); });
 
   /* hidden minigame: Bug Squash */
   var game = document.getElementById('game'), gc = document.getElementById('gc'), g = gc.getContext('2d'), gpanel = document.getElementById('gpanel');
   var gscore = document.getElementById('gscore'), gwave = document.getElementById('gwave'), glives = document.getElementById('glives'), ghint = document.getElementById('ghint');
+  var best = 0; try{ best = parseInt(localStorage.getItem('bsbest'),10) || 0; }catch(e){}
+  function saveBest(){ if(S.score > best){ best = S.score; try{ localStorage.setItem('bsbest', best); }catch(e){} } }
   var BUGS = ['NaN','null','404','undefined','segfault'], GW = 640, GH = 400, raf = 0, prevFocus = null;
-  var S = {on:false, state:'ready', x:GW/2, tx:GW/2, bullets:[], foes:[], ups:[], fx:[], stars:[], wave:0, queue:0, spawnT:0, fireT:0, lives:3, score:0, inv:0, power:0, shake:0, idle:0, last:0, keys:{}, col:{}, boss:null, bossT:0, waiting:false, wt:0};
+  var S = {on:false, state:'ready', x:GW/2, tx:GW/2, time:0, bullets:[], eb:[], foes:[], ups:[], fx:[], stars:[], wave:0, queue:0, spawnT:0, fireT:0, lives:3, score:0, inv:0, power:0, shake:0, idle:0, last:0, keys:{}, col:{}, boss:null, bossT:0, waiting:false, wt:0};
   for(var si=0;si<50;si++){ S.stars.push({x:Math.random()*GW, y:Math.random()*GH, s:Math.random()*.5+.15}); }
-  var INTRO = '<b>Bug Squash</b><p>Goal: clear 2 waves of bugs, then defeat the Memory Leak boss.</p><ul><li>Steer with your mouse, finger, or the ← → keys</li><li>Your ship shoots automatically</li><li>Don’t let bugs reach the bottom or touch you</li><li>Grab + drops for double shot</li></ul><button type="button" class="go" id="gstart">Start</button>';
+  var INTRO = '<b>Bug Squash</b><p>Goal: survive 4 waves of bugs, then defeat the Memory Leak boss. Beat your best score.</p><ul><li>Steer with your mouse, finger, or the ← → keys</li><li>Your ship shoots automatically</li><li>Bugs shoot back, so keep moving</li><li>Bugs fall faster the longer you survive</li><li>Don’t let bugs reach the bottom or touch you</li><li>Rare + drops give a short double shot</li></ul><button type="button" class="go" id="gstart">Start</button>';
   function gcolors(){ var cs = getComputedStyle(root); S.col = {rgb:cs.getPropertyValue('--accent-rgb').trim(), card:cs.getPropertyValue('--card').trim(), ink:cs.getPropertyValue('--ink').trim(), soft:cs.getPropertyValue('--ink-soft').trim(), line:cs.getPropertyValue('--line').trim()}; }
   function setHint(t){ if(ghint.textContent !== t){ ghint.textContent = t; } }
   function showPanel(h){ gpanel.innerHTML = h; gpanel.hidden = false; var b = gpanel.querySelector('button'); if(b){ b.focus(); } }
   function hud(){
-    gscore.textContent = 'score '+S.score; gwave.textContent = S.wave>=2 ? 'boss fight' : 'wave '+(S.wave+1)+'/2';
+    gscore.textContent = 'score '+S.score+' · best '+Math.max(best,S.score); gwave.textContent = S.wave>=4 ? 'boss fight' : 'wave '+(S.wave+1)+'/4';
     var h = ''; for(var i=0;i<3;i++){ h += i<S.lives ? '♥' : '♡'; } glives.textContent = h;
   }
   function burst(x,y,n,c){ for(var i=0;i<n;i++){ var a = Math.random()*6.283, v = Math.random()*3+1; S.fx.push({x:x, y:y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, l:1, c:c}); } }
   function textW(t){ g.font = '600 14px "IBM Plex Mono", monospace'; return g.measureText(t).width+16; }
   function spawnFoe(x,y){
     var t = BUGS[Math.floor(Math.random()*BUGS.length)], w = textW(t);
-    S.foes.push({x:x||w/2+Math.random()*(GW-w), x0:0, y:y||-20, s:t, w:w, hp:(t === 'undefined' || t === 'segfault') ? 2 : 1, ph:Math.random()*6, v:.55+.12*S.wave});
+    var hp2 = (t === 'undefined' || t === 'segfault') ? 2 : 1;
+    S.foes.push({x:x||w/2+Math.random()*(GW-w), x0:0, y:y||-20, s:t, w:w, hp:hp2, pts:hp2*10, ph:Math.random()*6, v:.75+.16*S.wave, amp:30+S.wave*12, shoots:(t === 'segfault' && S.wave >= 1), st:60+Math.random()*80});
     S.foes[S.foes.length-1].x0 = S.foes[S.foes.length-1].x;
   }
   function beginWave(){
-    if(S.wave < 2){ S.queue = [10,16][S.wave]; S.spawnT = 30; setHint('Wave '+(S.wave+1)+' of 2: shoot the bugs before they reach the bottom.'); }
-    else { S.boss = {x:GW/2, y:-40, vx:1.2, hp:40, max:40, s:'Memory Leak', w:170, boss:true}; S.foes.push(S.boss); S.queue = 0; S.bossT = 90; setHint('Boss fight: keep shooting “Memory Leak” until its red health bar is empty.'); }
+    if(S.wave < 4){ S.queue = [10,15,20,26][S.wave]; S.spawnT = 30; setHint('Wave '+(S.wave+1)+' of 4: shoot the bugs before they reach the bottom.'+(S.wave === 1 ? ' “segfault” bugs now shoot back, so keep moving.' : '')); }
+    else { S.boss = {x:GW/2, y:-40, vx:1.6, hp:80, max:80, pts:300, st:70, s:'Memory Leak', w:170, boss:true}; S.foes.push(S.boss); S.queue = 0; S.bossT = 90; setHint('Boss fight: shoot “Memory Leak” until its red health bar is empty, and dodge its spread shots.'); }
     hud();
   }
   function newGame(){
-    S.state = 'play'; S.bullets = []; S.foes = []; S.ups = []; S.fx = []; S.wave = 0; S.lives = 3; S.score = 0; S.inv = 0; S.power = 0; S.shake = 0; S.idle = 0; S.boss = null; S.waiting = false;
+    S.state = 'play'; S.bullets = []; S.eb = []; S.foes = []; S.ups = []; S.fx = []; S.wave = 0; S.lives = 3; S.score = 0; S.inv = 0; S.power = 0; S.shake = 0; S.idle = 0; S.time = 0; S.boss = null; S.waiting = false;
     S.x = S.tx = GW/2; gpanel.hidden = true; beginWave();
   }
   function endGame(win){
     S.state = win ? 'win' : 'over';
     if(win){
-      S.score += 100; hud(); for(var i=0;i<6;i++){ burst(Math.random()*GW, Math.random()*GH*.6, 22, i%2 ? S.col.rgb : '155,107,242'); }
-      showPanel('<b>Memory leak fixed. Secret unlocked.</b><p>Nice shooting. If you’d like to build something together:</p><p><a href="mailto:mannraj.singh1@gmail.com">email me</a></p><button type="button" class="go" id="gstart">Play again</button>');
+      S.score += 100+S.lives*50; saveBest(); hud(); for(var i=0;i<6;i++){ burst(Math.random()*GW, Math.random()*GH*.6, 22, i%2 ? S.col.rgb : '155,107,242'); }
+      showPanel('<b>Memory leak fixed. Secret unlocked.</b><p>Score '+S.score+' (best '+best+'), including a bonus for lives left. If you’d like to build something together:</p><p><a href="mailto:mannraj.singh1@gmail.com">email me</a></p><button type="button" class="go" id="gstart">Play again</button>');
     } else {
-      showPanel('<b>Game over</b><p>You scored '+S.score+'. The bugs win this round.</p><button type="button" class="go" id="gstart">Try again</button>');
+      saveBest(); hud();
+      showPanel('<b>Game over</b><p>You scored '+S.score+' (best '+best+'). The bugs win this round.</p><button type="button" class="go" id="gstart">Try again</button>');
     }
   }
   function loseLife(msg){
@@ -650,9 +674,9 @@ footer p{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--in
     if(S.lives <= 0){ endGame(false); } else { setHint(msg+' You have '+S.lives+' '+(S.lives === 1 ? 'life' : 'lives')+' left.'); }
   }
   function kill(f){
-    S.foes.splice(S.foes.indexOf(f),1); S.score += f.boss ? 200 : 10; burst(f.x, f.y, f.boss ? 40 : 10, '192,80,60'); hud();
+    S.foes.splice(S.foes.indexOf(f),1); S.score += f.pts; burst(f.x, f.y, f.boss ? 40 : 10, '192,80,60'); hud();
     if(f.boss){ S.boss = null; endGame(true); }
-    else if(Math.random() < .12){ S.ups.push({x:f.x, y:f.y}); }
+    else if(Math.random() < .08){ S.ups.push({x:f.x, y:f.y}); }
   }
   function gStep(ts){
     raf = requestAnimationFrame(gStep);
@@ -662,17 +686,19 @@ footer p{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--in
     S.tx = Math.max(30, Math.min(GW-30, S.tx)); S.x += (S.tx-S.x)*Math.min(.3*dt, 1);
     for(i=0;i<S.stars.length;i++){ var st = S.stars[i]; st.y += st.s*dt; if(st.y > GH){ st.y = 0; st.x = Math.random()*GW; } }
     if(S.state === 'play'){
-      S.idle += dt/60; if(S.inv > 0){ S.inv -= dt; } if(S.power > 0){ S.power -= dt; }
+      S.idle += dt/60; S.time += dt; if(S.inv > 0){ S.inv -= dt; } if(S.power > 0){ S.power -= dt; }
       if(S.idle > 5){ setHint('Steer with your mouse, finger, or the ← → keys. Shooting is automatic.'); }
       S.fireT -= dt;
-      if(S.fireT <= 0){ S.fireT = 16; if(S.power > 0){ S.bullets.push({x:S.x-9, y:GH-46}, {x:S.x+9, y:GH-46}); } else { S.bullets.push({x:S.x, y:GH-46}); } }
-      if(S.queue > 0){ S.spawnT -= dt; if(S.spawnT <= 0){ spawnFoe(); S.queue--; S.spawnT = Math.max(28, 60-S.wave*14); } }
+      if(S.fireT <= 0){ S.fireT = 14; if(S.power > 0){ S.bullets.push({x:S.x-9, y:GH-46}, {x:S.x+9, y:GH-46}); } else { S.bullets.push({x:S.x, y:GH-46}); } }
+      if(S.queue > 0){ S.spawnT -= dt; if(S.spawnT <= 0){ spawnFoe(); S.queue--; S.spawnT = Math.max(20, 52-S.wave*9); } }
       if(S.boss){
-        var bs = S.boss; if(bs.y < 70){ bs.y += dt; } else { bs.x += bs.vx*dt; if(bs.x < bs.w/2 || bs.x > GW-bs.w/2){ bs.vx *= -1; } S.bossT -= dt; if(S.bossT <= 0){ S.bossT = 80; spawnFoe(bs.x, bs.y+20); } }
+        var bs = S.boss; if(bs.y < 70){ bs.y += dt; } else { bs.x += bs.vx*dt; if(bs.x < bs.w/2 || bs.x > GW-bs.w/2){ bs.vx *= -1; } S.bossT -= dt; if(S.bossT <= 0){ S.bossT = 80; spawnFoe(bs.x, bs.y+20); }
+          bs.st -= dt; if(bs.st <= 0){ bs.st = 70; for(var k=-1;k<=1;k++){ S.eb.push({x:bs.x, y:bs.y+16, vx:k*1.1+(S.x-bs.x)/200, vy:3.2}); } } }
       }
       for(i=S.foes.length-1;i>=0;i--){
         f = S.foes[i]; if(f.boss){ continue; }
-        f.y += f.v*dt; f.x = Math.max(f.w/2, Math.min(GW-f.w/2, f.x0+Math.sin(f.ph+f.y/40)*30));
+        f.y += f.v*dt*(1+Math.min(S.time/60*.008,.6)); f.x = Math.max(f.w/2, Math.min(GW-f.w/2, f.x0+Math.sin(f.ph+f.y/40)*f.amp));
+        if(f.shoots){ f.st -= dt; if(f.st <= 0){ f.st = Math.max(70, 130-S.wave*10); S.eb.push({x:f.x, y:f.y+10, vx:Math.max(-1.5, Math.min(1.5, (S.x-f.x)/Math.max(GH-f.y,1)*3.2)), vy:3.2}); } }
         if(f.y > GH){ S.foes.splice(i,1); loseLife('A bug got through.'); }
         else if(S.inv <= 0 && f.y > GH-52 && Math.abs(f.x-S.x) < f.w/2+22){ S.foes.splice(i,1); burst(f.x, f.y, 8, '192,80,60'); loseLife('A bug hit your ship.'); }
         if(S.state !== 'play'){ break; }
@@ -687,12 +713,17 @@ footer p{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--in
         }
         if(S.state !== 'play'){ break; }
       }
+      for(i=S.eb.length-1;i>=0;i--){
+        var e = S.eb[i]; e.x += e.vx*dt; e.y += e.vy*dt;
+        if(e.y > GH || e.x < 0 || e.x > GW){ S.eb.splice(i,1); }
+        else if(S.inv <= 0 && e.y > GH-46 && e.y < GH-12 && Math.abs(e.x-S.x) < 18){ S.eb.splice(i,1); burst(e.x, e.y, 8, '192,80,60'); loseLife('You got hit by a bug’s shot.'); if(S.state !== 'play'){ break; } }
+      }
       for(i=S.ups.length-1;i>=0;i--){
         var u = S.ups[i]; u.y += 1.4*dt;
-        if(u.y > GH-50 && Math.abs(u.x-S.x) < 34){ S.ups.splice(i,1); S.power = 480; setHint('Double shot for 8 seconds.'); }
+        if(u.y > GH-50 && Math.abs(u.x-S.x) < 34){ S.ups.splice(i,1); S.power = 360; setHint('Double shot for 6 seconds.'); }
         else if(u.y > GH){ S.ups.splice(i,1); }
       }
-      if(S.state === 'play' && S.wave < 2 && S.queue === 0 && S.foes.length === 0){
+      if(S.state === 'play' && S.wave < 4 && S.queue === 0 && S.foes.length === 0){
         if(!S.waiting){ S.waiting = true; S.wt = 70; setHint('Wave cleared. Get ready for the next one.'); }
         S.wt -= dt; if(S.wt <= 0){ S.waiting = false; S.wave++; beginWave(); }
       }
@@ -715,6 +746,7 @@ footer p{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--in
     }
     if(S.boss){ g.fillStyle = S.col.line; g.fillRect(170, 10, 300, 8); g.fillStyle = 'rgb(192,80,60)'; g.fillRect(170, 10, 300*Math.max(S.boss.hp,0)/S.boss.max, 8); }
     g.fillStyle = 'rgb('+rgb+')'; for(i=0;i<S.bullets.length;i++){ g.fillRect(S.bullets[i].x-1.5, S.bullets[i].y-8, 3, 10); }
+    g.fillStyle = 'rgb(224,90,70)'; for(i=0;i<S.eb.length;i++){ g.fillRect(S.eb[i].x-2, S.eb[i].y-4, 4, 8); }
     for(i=0;i<S.ups.length;i++){ g.strokeStyle = 'rgb('+rgb+')'; g.strokeRect(S.ups[i].x-11, S.ups[i].y-11, 22, 22); g.fillStyle = 'rgb('+rgb+')'; g.fillText('+', S.ups[i].x, S.ups[i].y+5); }
     if(!(S.inv > 0 && Math.floor(S.inv/6)%2)){
       g.shadowBlur = 16; g.shadowColor = 'rgb('+rgb+')'; g.fillStyle = 'rgb('+rgb+')';
@@ -725,8 +757,8 @@ footer p{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--in
     g.restore();
   }
   function openGame(){
-    if(S.on){ return; } S.on = true; prevFocus = document.activeElement; gcolors(); S.state = 'ready'; S.foes = []; S.bullets = []; S.ups = []; S.fx = []; S.lives = 3; S.score = 0; S.wave = 0; S.boss = null;
-    hud(); setHint('Press Start. Goal: clear 2 waves of bugs, then beat the boss.');
+    if(S.on){ return; } S.on = true; prevFocus = document.activeElement; gcolors(); S.state = 'ready'; S.eb = []; S.foes = []; S.bullets = []; S.ups = []; S.fx = []; S.lives = 3; S.score = 0; S.wave = 0; S.boss = null;
+    hud(); setHint('Press Start. Goal: survive 4 waves, then beat the boss. Bugs shoot back.');
     game.hidden = false; document.body.style.overflow = 'hidden'; showPanel(INTRO); S.last = 0; raf = requestAnimationFrame(gStep);
   }
   function closeGame(){
